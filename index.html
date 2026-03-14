@@ -438,6 +438,13 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
       <!-- GÉNÉRAL -->
       <div id="apanel-general" style="display:none;">
         <div class="info-box">🗓 <span>Reset automatique :</span> les tâches se remettent à zéro chaque nouveau jour. Les pièces s'accumulent.</div>
+
+        <div style="font-family:'Fredoka One',cursive;font-size:.9rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🔐 Code Parent</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px;">
+          <input id="new-pin-input" class="modal-input" type="password" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="Nouveau code (4 chiffres)" style="flex:1;letter-spacing:4px;">
+          <button class="redeem-btn" style="flex-shrink:0;padding:10px 16px;" onclick="saveNewPin()">💾</button>
+        </div>
+
         <div style="font-family:'Fredoka One',cursive;font-size:.9rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Réinitialiser</div>
         <button class="reset-btn" onclick="resetDailyTasks()">🔄 Forcer le reset des tâches</button>
         <button class="reset-btn" onclick="resetKidCoins()">💸 Pièces de <span id="reset-kid-name">Enzo</span> à zéro</button>
@@ -577,10 +584,63 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
 const KIDS=['enzo','evan','madison'];
 let KID_NAMES={enzo:'Enzo',evan:'Evan',madison:'Madison'}; // mutable, stored in state
 const COLORS=['#4FC3F7','#69F0AE','#FF6EC7','#FFD700','#FF7043','#CE93D8','#80DEEA','#AED581','#F48FB1','#FFCC02'];
-const PROFILE_EMOJIS=['🚀','⚡','🌸','🦁','🐉','⭐','🎮','🏆','🦊','🐸','🦄','🌈','🔥','💎','🎯','🐬','🦋','🍀','🎪','🐧'];
-const TASK_EMOJIS  =['🦷','👕','🥣','🧸','🌙','🍽️','🎒','👟','🧴','🚿','🛁','🪥','🧹','📚','🏃','🍎','🥛','💤','🎨','🎵','🐕','🐈','🌿','🧺','🍳'];
-const REWARD_EMOJIS=['📺','🎮','🎨','🍕','🎁','🍦','🎠','🎪','🍿','🎲','🏖️','🎭','🎯','🧩','🎸','🚲','🛴','🎡','🏊','🍰','🎤','📱','💻','🧸','🎀'];
-const BP_EMOJIS    =['😤','🤥','👊','🗣️','😈','🙅','💢','😡','🤬','📺','🎮','🍬','🏃','📵','🚫'];
+const PROFILE_EMOJIS=['🚀','⚡','🌸','🦁','🐉','⭐','🎮','🏆','🦊','🐸','🦄','🌈','🔥','💎','🎯','🐬','🦋','🍀','🎪','🐧','🦸','🧙','🐺','🦅','🐻','🌻','🍄','🎸','🏄','🤖'];
+const TASK_EMOJIS=[
+  // Hygiène
+  '🦷','🚿','🛁','🧴','🪥','🧼','🫧','🪒','💆','👃','💇',
+  // Habillage
+  '👕','👖','🧥','👗','🩲','🩳','🧦','🧤','👟','👒','🎽',
+  // Repas
+  '🥣','🍽️','🥛','🍎','🍞','🥚','🧇','🥞','🥗','🍱','🥤','🧃','🍳','🫙','🥕','🍇',
+  // Tâches maison
+  '🧹','🧺','🪣','🧽','🗑️','🪠','🛏️','🪑','🚪','💡','♻️','🫧','🪴','🧻','🍴','🥄','🔌',
+  // Vaisselle / cuisine
+  '🍵','☕','🫖','🧊','🍶',
+  // École / devoirs
+  '📚','✏️','📝','🖊️','📐','📏','🗒️','📖','🎒','💻','📓','🖍️',
+  // WC / salle de bain
+  '🚽','🪤','🪞',
+  // Activités
+  '🏃','🤸','🏊','🚲','⚽','🏀','🎨','🎵','🎹','🎸','🎤','🕹️',
+  // Animaux
+  '🐕','🐈','🐠','🐇',
+  // Divers
+  '🌅','🌙','⏰','💪','🤝','🙏','❤️','🌿','🧲','📦','🔑',
+];
+const REWARD_EMOJIS=[
+  // Écrans
+  '📺','🎮','🕹️','📱','💻','🎬','🎥',
+  // Sorties / activités
+  '🎠','🎡','🎢','🎪','🏖️','🏕️','⛺','🎑','✈️','🚗','🛵','🛒',
+  // Sport
+  '⚽','🏀','🎾','🏓','🛹','🛼','🤸','🏄','🚴','🏊','⛷️','🎿','🥊',
+  // Nourriture
+  '🍕','🍔','🌮','🍣','🍜','🍨','🧁','🎂','🍭','🍫','🍩','🍦','🍿','🥤','🧃','🍰',
+  // Jouets / jeux
+  '🧸','🎁','🎲','🧩','🎯','🎳','🪁','🪀','🎭','🃏','🀄',
+  // Arts / créativité
+  '🎨','🎸','🎹','🎤','🎧','📷','🖌️','✂️','🧶','🪡',
+  // Mode / bien-être
+  '👗','👠','👒','🎩','💄','💅','🛁','💆','💍','🕶️',
+  // Nature / animaux
+  '🌈','🌻','🌺','🦋','🐬','🐾','🌙','⭐','🌟',
+  // Divers
+  '🏆','🥇','🎀','🪄','🔮','🎉','🎊','🎈',
+];
+const BP_EMOJIS=[
+  // Comportements négatifs
+  '😤','🤥','👊','🗣️','😈','🙅','💢','😡','🤬','🙄','😒','🤦','💩',
+  // Mauvaises habitudes physiques
+  '🦷','👃','👆','🫦','💅','🤏','👀',
+  // Interdits / restrictions
+  '📺','🎮','🍬','🏃','📵','🚫','⛔','🔞','❌','❗','‼️',
+  // Comportements spécifiques
+  '🫵','😝','🧠','⚡','🔥','💣','🌪️','😱','🤢',
+  // Provocation / bagarre
+  '🥊','👋','✌️','🤼','😠','👿','🗡️','💥','🎭','🃏',
+  // Rongeage d'ongles / mauvaises habitudes
+  '🖐️','✋','🤚','🫳','🫴',
+];
 
 const DEFAULT_TASKS_MATIN=[
   {id:'teeth_m',  label:'Se laver les dents', emoji:'🦷',coins:2},
@@ -662,6 +722,7 @@ try{
     if(!state.bpLog)     state.bpLog=[];
     if(!state.bpExpiryDays) state.bpExpiryDays=3;
     if(!state.kidNames)  state.kidNames={enzo:'Enzo',evan:'Evan',madison:'Madison'};
+    if(!state.pin)       state.pin='1234';
   }
 }catch(e){}
 // Sync mutable KID_NAMES from state
@@ -680,6 +741,15 @@ function checkDailyReset(){
   if(state.lastResetDate!==t){
     const wasSet=!!state.lastResetDate;
     KIDS.forEach(k=>{state.done[k]={matin:{},soir:{}};});
+    // Purge coin-type punishments from previous days, keep active time punishments
+    if(wasSet){
+      const now=Date.now();
+      state.bpLog=state.bpLog.filter(b=>{
+        if(b.punType==='time') return b.endsAt>now; // keep active time punishments
+        // keep only today's coin punishments
+        return new Date(b.ts).toISOString().slice(0,10)===t;
+      });
+    }
     state.lastResetDate=t;
     try{localStorage.setItem('rituel_v6',JSON.stringify(state));}catch(e){}
     if(wasSet) showToast();
@@ -1056,23 +1126,24 @@ function physicsLoop(){
 function renderPiggyBank(){
   document.getElementById('piggy-kid-name').textContent=`Récompenses de ${KID_NAMES[currentKid]}`;
   const list=document.getElementById('rewards-list');list.innerHTML='';
-  const coins=state.coins[currentKid],redeemed=state.redeemed[currentKid]||{},rewards=state.rewards[currentKid]||[];
+  const coins=state.coins[currentKid],rewards=state.rewards[currentKid]||[];
   if(!rewards.length){list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.3);padding:40px;">Aucune récompense configurée.</div>';return;}
   rewards.forEach(r=>{
-    const isR=!!redeemed[r.id],isU=!isR&&coins>=r.cost,pct=Math.min(100,coins/r.cost*100);
-    const div=document.createElement('div');div.className=`reward-item ${isR?'redeemed':isU?'unlocked':'locked'}`;
+    const canUse=coins>=r.cost;
+    const pct=Math.min(100,coins/r.cost*100);
+    const div=document.createElement('div');div.className=`reward-item ${canUse?'unlocked':'locked'}`;
     div.innerHTML=`
       <div class="reward-emoji">${r.emoji}</div>
       <div class="reward-info"><div class="reward-name">${r.name}</div><div class="reward-cost">${r.cost} 🪙</div>
-      ${!isR?`<div class="reward-progress"><div class="reward-progress-fill" style="width:${pct}%"></div></div>`:''}</div>
-      ${isR?'<div style="font-size:1.3rem">✅</div>':isU?`<button class="redeem-btn" onclick="redeemReward('${r.id}',${r.cost})">Utiliser</button>`:`<div style="font-size:.85rem;color:rgba(255,255,255,.3)">${r.cost-coins}🪙</div>`}`;
+      <div class="reward-progress"><div class="reward-progress-fill" style="width:${pct}%"></div></div></div>
+      ${canUse?`<button class="redeem-btn" onclick="redeemReward('${r.id}',${r.cost})">Utiliser</button>`:`<div style="font-size:.85rem;color:rgba(255,255,255,.3)">${r.cost-coins}🪙</div>`}`;
     list.appendChild(div);
   });
 }
 function redeemReward(id,cost){
   if(state.coins[currentKid]<cost)return;
   gcConfirm('Utiliser cette récompense ?',()=>{
-    state.coins[currentKid]-=cost;state.redeemed[currentKid][id]=true;
+    state.coins[currentKid]-=cost;
     save();renderPiggyBank();
   },'🎁 Récompense');
 }
@@ -1081,7 +1152,7 @@ function redeemReward(id,cost){
 // ADMIN — PIN
 // ══════════════════════════════════════════
 let pinCode='',adminKid='enzo',adminSubTab='profil';
-const PIN='1234';
+let PIN=state.pin||'1234';
 function openAdmin(){
   pinCode='';updatePinDots();
   document.getElementById('pin-error').textContent='';
@@ -1329,6 +1400,18 @@ function deleteBpLog(id){
 // ══════════════════════════════════════════
 // ADMIN — GÉNÉRAL
 // ══════════════════════════════════════════
+function saveNewPin(){
+  const val=document.getElementById('new-pin-input').value.trim();
+  if(!/^\d{4}$/.test(val)){
+    gcConfirm('Le code doit contenir exactement 4 chiffres.',()=>{},'⚠️ Code invalide');
+    return;
+  }
+  gcConfirm(`Changer le code parent pour <strong>${val}</strong> ?`,()=>{
+    state.pin=val;PIN=val;
+    document.getElementById('new-pin-input').value='';
+    save();
+  },'🔐 Nouveau code');
+}
 function resetDailyTasks(){
   gcConfirm('Forcer le reset des tâches maintenant ?',()=>{
     KIDS.forEach(k=>{state.done[k]={matin:{},soir:{}};});state.lastResetDate=today();save();
