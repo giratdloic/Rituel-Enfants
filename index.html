@@ -704,7 +704,8 @@ let state={
     madison:dc(DEFAULT_REWARDS.filter(r=>r.id!=='r2')),
   },
   bpTypes:dc(DEFAULT_BP_TYPES),
-  // bpLog entries: {id, kid, typeId, label, emoji, punType, penalty, duration, ts, endsAt}
+  bpLog:[],
+  bpExpiryDays:3,
 };
 function getKids(){return state.kids||[];}
 
