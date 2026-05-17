@@ -586,7 +586,6 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
 // ══════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════
-function getKids(){return state.kids||[];}
 let KID_NAMES={enzo:'Enzo',evan:'Evan',madison:'Madison'}; // mutable, stored in state
 const COLORS=['#4FC3F7','#69F0AE','#FF6EC7','#FFD700','#FF7043','#CE93D8','#80DEEA','#AED581','#F48FB1','#FFCC02'];
 const PROFILE_EMOJIS=['🚀','⚡','🌸','🦁','🐉','⭐','🎮','🏆','🦊','🐸','🦄','🌈','🔥','💎','🎯','🐬','🦋','🍀','🎪','🐧','🦸','🧙','🐺','🦅','🐻','🌻','🍄','🎸','🏄','🤖'];
@@ -709,13 +708,13 @@ let state={
   bpLog:[],
   bpExpiryDays:3, // how long 'coins' punishment stays visible
 };
-
+function getKids(){return state.kids||[];}
 try{
   const s=localStorage.getItem('rituel_v6');
   if(s){
     const p=JSON.parse(s);
     state=Object.assign(state,p);
-    KIDS.forEach(k=>{
+    getKids().forEach(k=>{
       if(!state.profiles[k]) state.profiles[k]={color:'#4FC3F7',emoji:'🚀'};
       if(!state.tasks[k])    state.tasks[k]={matin:dc(DEFAULT_TASKS_MATIN),soir:dc(DEFAULT_TASKS_SOIR)};
       if(!state.tasks[k].matin) state.tasks[k].matin=dc(DEFAULT_TASKS_MATIN);
@@ -746,7 +745,7 @@ function checkDailyReset(){
   const t=today();
   if(state.lastResetDate!==t){
     const wasSet=!!state.lastResetDate;
-    KIDS.forEach(k=>{state.done[k]={matin:{},soir:{}};});
+   getKids().forEach(k=>{state.done[k]={matin:{},soir:{}};});
     // Purge coin-type punishments from previous days, keep active time punishments
     if(wasSet){
       const now=Date.now();
