@@ -716,6 +716,9 @@ if(localStorage.getItem('rituel_version')!==APP_VERSION){
 
 try{
   const s=localStorage.getItem('rituel_v6');
+  if(s){
+    const p=JSON.parse(s);
+    state=Object.assign(state,p);
     getKids().forEach(k=>{
       if(!state.profiles[k]) state.profiles[k]={color:'#4FC3F7',emoji:'🚀'};
       if(!state.tasks[k])    state.tasks[k]={matin:dc(DEFAULT_TASKS_MATIN),soir:dc(DEFAULT_TASKS_SOIR)};
