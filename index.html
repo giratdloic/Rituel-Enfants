@@ -354,11 +354,7 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
     </div>
 
     <div id="admin-content" class="admin-content">
-      <div class="kid-selector" id="admin-kid-selector">
-        <button class="kid-tab active" onclick="selectAdminKid('enzo',this)">Enzo</button>
-        <button class="kid-tab" onclick="selectAdminKid('evan',this)">Evan</button>
-        <button class="kid-tab" onclick="selectAdminKid('madison',this)">Madison</button>
-      </div>
+      <div class="kid-selector" id="admin-kid-selector"></div>
       <div class="admin-tabs">
         <button class="admin-tab active" id="atab-profil"     onclick="switchAdminTab('profil')">🎨 Profil</button>
         <button class="admin-tab"        id="atab-taches"     onclick="switchAdminTab('taches')">✅ Tâches</button>
@@ -383,7 +379,16 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
           <div class="coin-adjust-val" id="admin-coins-val">0</div>
           <button class="coin-adj-btn" onclick="adjustCoins(+5)">+</button>
         </div>
+		<div style="margin-top:24px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px;">
+  <button id="delete-kid-btn" onclick="confirmDeleteKid()"
+    style="width:100%;padding:13px;background:rgba(255,82,82,.08);border:1.5px solid rgba(255,82,82,.3);border-radius:14px;color:var(--red);font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;">
+    🗑️ Supprimer ce profil
+  </button>
+  <div id="delete-kid-warning" style="font-size:.78rem;color:rgba(255,255,255,.35);text-align:center;margin-top:10px;">
+    Supprime définitivement le profil, tâches, pièces et récompenses.
+  </div>
       </div>
+    </div>
 
       <!-- TÂCHES -->
       <div id="apanel-taches" style="display:none;">
@@ -581,7 +586,7 @@ body{font-family:'Nunito',sans-serif;background:var(--purple-dark);min-height:10
 // ══════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════
-const KIDS=['enzo','evan','madison'];
+function getKids(){return state.kids||[];}
 let KID_NAMES={enzo:'Enzo',evan:'Evan',madison:'Madison'}; // mutable, stored in state
 const COLORS=['#4FC3F7','#69F0AE','#FF6EC7','#FFD700','#FF7043','#CE93D8','#80DEEA','#AED581','#F48FB1','#FFCC02'];
 const PROFILE_EMOJIS=['🚀','⚡','🌸','🦁','🐉','⭐','🎮','🏆','🦊','🐸','🦄','🌈','🔥','💎','🎯','🐬','🦋','🍀','🎪','🐧','🦸','🧙','🐺','🦅','🐻','🌻','🍄','🎸','🏄','🤖'];
@@ -678,6 +683,7 @@ function today(){return new Date().toISOString().slice(0,10);}
 function uid(){return 'u'+Date.now()+Math.random().toString(36).slice(2,5);}
 
 let state={
+	kids:['enzo','evan','madison'],
   coins:{enzo:0,evan:0,madison:0},
   done:{enzo:{matin:{},soir:{}},evan:{matin:{},soir:{}},madison:{matin:{},soir:{}}},
   redeemed:{enzo:{},evan:{},madison:{}},
@@ -1168,7 +1174,10 @@ function pinPress(d){
       if(pinCode===PIN){
         document.getElementById('pin-screen').style.display='none';
         document.getElementById('admin-content').classList.add('show');
-        selectAdminKid('enzo',document.querySelector('#admin-kid-selector .kid-tab'));
+		renderAdminKidSelector();
+        document.getElementById('admin-content').classList.add('show');
+        renderAdminKidSelector();
+        selectAdminKid(state.kids[0]);
       }else{
         document.getElementById('pin-error').textContent='Code incorrect !';
         document.getElementById('pin-dots').classList.add('shake');
@@ -1185,6 +1194,25 @@ function updatePinDots(){for(let i=0;i<4;i++)document.getElementById('d'+i).clas
 // ADMIN — NAV
 // ══════════════════════════════════════════
 function selectAdminKid(kid,btn){
+function renderAdminKidSelector(){
+  const sel=document.getElementById('admin-kid-selector');
+  sel.innerHTML='';
+  getKids().forEach(kid=>{
+    const btn=document.createElement('button');
+    btn.className='kid-tab'+(kid===adminKid?' active':'');
+    btn.textContent=state.kidNames[kid]||kid;
+    btn.onclick=()=>selectAdminKid(kid,btn);
+    sel.appendChild(btn);
+  });
+  const addBtn=document.createElement('button');
+  addBtn.className='add-btn';addBtn.style.cssText='width:auto;padding:8px 14px;border-style:dashed;color:var(--green);border-color:rgba(105,240,174,.4);';
+  addBtn.textContent='＋ Enfant';
+  addBtn.onclick=openNewKidModal;
+  sel.appendChild(addBtn);
+}
+
+function selectAdminKid(kid,btn){
+renderAdminKidSelector();
   adminKid=kid;
   document.querySelectorAll('.kid-tab').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
@@ -1610,6 +1638,48 @@ function gcCancel(){document.getElementById('generic-confirm-overlay').classList
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
+function confirmDeleteKid(){
+  if(getKids().length<=1){
+    gcConfirm('Il doit rester au moins un profil.',()=>{},'⚠️ Impossible');return;
+  }
+  gcConfirm(
+    `Supprimer définitivement <strong>${state.kidNames[adminKid]}</strong> ?<br><br>Toutes ses données seront perdues.`,
+    ()=>deleteKid(adminKid),
+    '🗑️ Supprimer ce profil'
+  );
+}
+
+function deleteKid(kid){
+  state.kids=state.kids.filter(k=>k!==kid);
+  ['coins','done','redeemed','kidNames','profiles','tasks','rewards'].forEach(k=>delete state[k][kid]);
+  state.bpLog=state.bpLog.filter(b=>b.kid!==kid);
+  adminKid=state.kids[0];
+  save();
+  renderAdminKidSelector();
+  renderAdminPanel();
+}
+
+function openNewKidModal(){
+  // réutilise gcConfirm pour demander le prénom simplement
+  document.getElementById('gc-title').textContent='➕ Nouvel enfant';
+  document.getElementById('gc-msg').innerHTML=
+    '<input id="new-kid-name" class="modal-input" type="text" maxlength="20" placeholder="Prénom..." style="width:100%;margin-top:8px;">';
+  gcCallback=()=>{
+    const name=document.getElementById('new-kid-name').value.trim();
+    if(!name)return;
+    const id='kid_'+Date.now();
+    state.kids.push(id);
+    state.kidNames[id]=name;
+    state.profiles[id]={color:COLORS[Math.floor(Math.random()*COLORS.length)],emoji:PROFILE_EMOJIS[Math.floor(Math.random()*PROFILE_EMOJIS.length)]};
+    state.coins[id]=0;state.done[id]={matin:{},soir:{}};state.redeemed[id]={};
+    state.tasks[id]={matin:dc(DEFAULT_TASKS_MATIN),soir:dc(DEFAULT_TASKS_SOIR)};
+    state.rewards[id]=dc(DEFAULT_REWARDS);
+    adminKid=id;
+    save();renderAdminKidSelector();switchAdminTab('profil');
+  };
+  document.getElementById('generic-confirm-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('new-kid-name')?.focus(),300);
+}
 checkDailyReset();
 renderHome();
 </script>
