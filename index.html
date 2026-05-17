@@ -791,7 +791,7 @@ function countActivePunFor(kid){return activePunFor(kid).length;}
 function renderHome(){
   const grid=document.getElementById('kids-grid');
   grid.innerHTML='';
-  KIDS.forEach(kid=>{
+ getKids().forEach(kid=>{
     const p=state.profiles[kid],col=p.color,rgb=hexRgb(col);
     const allT=[...state.tasks[kid].matin,...state.tasks[kid].soir];
     const total=allT.length;
@@ -1365,7 +1365,7 @@ function renderAdminBadPoints(){
   const kc=document.getElementById('bp-kid-buttons');
   if(selectedBpTypeId){
     kc.style.display='grid';kc.innerHTML='';
-    KIDS.forEach(kid=>{
+    getKids().forEach(kid=>{
       const p=state.profiles[kid];
       const btn=document.createElement('div');btn.className='bp-kid-btn';
       btn.style.cssText=`border-color:${p.color};background:rgba(${hexRgb(p.color)},.1);`;
@@ -1441,7 +1441,7 @@ function saveNewPin(){
 }
 function resetDailyTasks(){
   gcConfirm('Forcer le reset des tâches maintenant ?',()=>{
-    KIDS.forEach(k=>{state.done[k]={matin:{},soir:{}};});state.lastResetDate=today();save();
+   getKids().forEach(k=>{state.done[k]={matin:{},soir:{}};});state.lastResetDate=today();save();
   },'🔄 Reset tâches');
 }
 function resetKidCoins(){
@@ -1451,7 +1451,7 @@ function resetKidCoins(){
 }
 function resetAllCoins(){
   gcConfirm('Mettre <strong>toutes</strong> les pièces à zéro ?',()=>{
-    KIDS.forEach(k=>{state.coins[k]=0;state.redeemed[k]={};});save();renderAdminProfil();
+    getKids().forEach(k=>{state.coins[k]=0;state.redeemed[k]={};});
   },'💥 Reset total');
 }
 
